@@ -14,10 +14,9 @@ const router=express.Router();
 const controller = require('./api/controller');
 app.use(express.static('public'));
 
-app.get('/',controller.index);
-app.post('/cha',controller.changeValue);
-app.post('/send',controller.SendValue);
+app.get('/get',controller.index);
 app.get('/giveme',controller.RequestValue);
+app.post('/send',controller.SendValue);
 //웹서버 페이지
 
 //웹서버가 열렸을 떄 일어날 일들
