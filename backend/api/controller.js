@@ -87,9 +87,9 @@ port.on('error', function(err) {
     console.log('Error: ', err.message);
 });
     
-port.on('data', function (data) {
+port.on('data', function (buf) {
     //받으면 바로 파일이나 디비에 전에 데이터를 저장하자. 프로토콜은 분,초?
-    var buf=new Buffer(data);
+    var data=new Buffer(buf,"hex");
     //받은 데이터는 데이터
     var tmp={
         't':0,
@@ -100,7 +100,7 @@ port.on('data', function (data) {
     var now;
     var fl=0;
     for(var i=3;i<data.length;i++){
-        if(data[0]=='\x02'){
+        if(data[0]==''){
             console.log("start");
             if(data[1]=='T'){
                 if(data[2]==device.toString()){
@@ -134,7 +134,7 @@ port.on('data', function (data) {
                         }    
                         now=data[i];
                         break;
-                        case '\x03':
+                        case '':
                         if(fl){
                             tmp[now]/=fl;
                             fl=0;
@@ -155,5 +155,8 @@ port.on('data', function (data) {
             }
         }
     }        
-    console.log('Read and Send Data : ' + data);
+    console.log('Read and Send Data : \n');
+    for (var i=0;i<data.length;i++){
+        console.log(data[i]+" "+i.toString());
+    }
 });//데이터를 받으면 실행되는 콜백함수
