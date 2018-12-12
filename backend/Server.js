@@ -17,6 +17,7 @@ app.use(express.static('public'));
 app.get('/get',controller.index);
 app.get('/giveme',controller.RequestValue);
 app.post('/send',controller.SendValue);
+app.get('/Getdb/:tim',controller.Getdb);
 //웹서버 페이지
 
 //웹서버가 열렸을 떄 일어날 일들
