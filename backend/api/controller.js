@@ -53,12 +53,19 @@ exports.RequestValue = (req, res) => {//분 %10이 0일때 한번씩 호출하�
     return res.string(String.fromCharCode(tim));
 };*/
 
+
 exports.Getdb = (req, res) => {
     const tmp = parseInt(req.params.tim, 10);
     if(tmp==0){
-        return res.json(connection.query(`select * from sensor order by tim DESC`).row);
+        connection.query('select * from sensor', function(err, rows, fields) {
+            if (err) throw err;
+            return rows;
+        });
     }
-    return res.json(connection.query(`select * from sensor where tim='${tmp}'`).row);
+    connection.query(`select * from sensor where tim='${tmp}'`, function(err, rows, fields) {
+        if (err) throw err;
+        return rows;
+    });
 };
 
 port.on('open', function () {
@@ -163,7 +170,7 @@ port.on('data', function (buf) {
 
     //tim=date.toFormat('YYYYMMDDHH24MISS');
     console.log(sensor);
-    var rows=connection.query(`insert into sensor values(0,${sensor['t']},${sensor['h']},${sensor['c']},${sensor['i']});`, function (err, rows, fields) {
+    connection.query(`insert into sensor values(0,${sensor['t']},${sensor['h']},${sensor['c']},${sensor['i']});`, function (err, rows, fields) {
         if (err){
             throw err;
         }    
