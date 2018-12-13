@@ -59,14 +59,14 @@ exports.RequestValue = (req, res) => {//분 %10이 0일때 한번씩 호출하�
 exports.Getdb = (req, res) => {
     const tmp = parseInt(req.params.tim, 10);
     if(tmp==0){
-        connection.query('select * from sensor', function(err, rows, fields) {
+        connection.query('select * from sensor order by tim DESC', function(err, rows, fields) {
             if (err) throw err;
-            return rows;
+            return res.json(rows[0]);
         });
     }
-    connection.query(`select * from sensor where tim='${tmp}'`, function(err, rows, fields) {
+    connection.query(`select * from sensor where tim=${tmp}`, function(err, rows, fields) {
         if (err) throw err;
-        return rows;
+        return res.json(rows[0]);
     });
 };
 
