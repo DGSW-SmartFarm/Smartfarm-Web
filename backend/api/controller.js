@@ -10,7 +10,7 @@ var SerialPort = require('serialport');
 var port = new SerialPort("COM5", {
     baudRate: 115200
 });
-const device = 3;
+var device=3;
 let sensor = {//대괄호이다
     't': 0,
     'h': 0,
@@ -33,16 +33,18 @@ exports.index = (req, res) => {
     return res.json(sensor);
 };
 exports.SendValue = (req, res) => {
-    const l = req.body.l || '';
-    const f = req.body.f || '';
-    const r = req.bdoy.r || '';
-    const b = req.body.b || '';
-    const w = req.body.w || '';
+    const l = req.body.l%256 || '';
+    const f = req.body.f%256 || '';
+    const r = req.bdoy.r%256 || '';
+    const b = req.body.b%256 || '';
+    const w = req.body.w%256 || '';
+    
     var str = "\x02L0" + l + "W" + f + "R" + r + "G" + g + "B" + w + '\x0d\x0a\x03';
     var buf = new Buffer(str);
     port.write(buf);
 };
 exports.RequestValue = (req, res) => {//분 %10이 0일때 한번씩 호출하자
+    device=req.params.device;
     var str = "\x02T" + device.toString() + "TEMP?\x03\x0A\x0D";
     var buf = new Buffer(str);
     port.write(buf);
@@ -82,7 +84,7 @@ port.on('error', function (err) {
     console.log('Error: ', err.message);
 });
 
-port.on('data', function (buf) {
+port.on('data', (buf)=> {
     var data = new Buffer(buf, "hex");
     var tmp = {
         'T': 0,
@@ -94,9 +96,13 @@ port.on('data', function (buf) {
     var fl = 0;
     var pl = 1;
     for (var i = 3; i < data.length; i++) {
+        console.log("1")
         if (String.fromCharCode(data[0]) == '') {
+            console.log("2");
             if (String.fromCharCode(data[1]) == 'T') {
-                if (String.fromCharCode(data[2]) == device.toString()) {
+                console.log("3");
+                if (String.fromCharCode(data[2]) == device) {
+                    console.log("4");
                     switch (String.fromCharCode(data[i])) {
                         case 'T':
                             if (fl || !pl < 0) {
@@ -177,10 +183,15 @@ port.on('data', function (buf) {
         console.log('The solution is: ', rows[0]);
     });
     console.log('Read and Send Data : ' + data);
+    //return res.json(sensor);
     //여기서 바로 res.json return 하게 가능?
     //    String.fromCharCode(askii);
 });//데이터를 받으면 실행되는 콜백함수
-
+/*
+,(req,res)=>{
+    return res.json(sensor);
+}
+*/
 setInterval(() => {
     // app is running
 }, 1000);

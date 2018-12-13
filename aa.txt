@@ -1,0 +1,326 @@
+
+var SerialPort = require('serialport');
+var port = new SerialPort("COM5", {
+    baudRate: 115200
+});
+
+const express=require('express');
+const app = express();
+const hostname='127.0.0.1';
+const portnum='728';
+const router=express.Router();
+const controller = require('./api/controller');
+app.use(express.static('public'));
+
+//app.get('/get',controller.index);
+app.get('/giveme/:device',controller.RequestValue.index);
+app.post('/send',controller.SendValue);
+app.get('/Getdb/:tim',controller.Getdb);
+//웹서버 페이지
+
+//웹서버가 열렸을 떄 일어날 일들
+app.listen(portnum,()=>{
+    console.log('Server running on http://'+hostname+':'+portnum+'/');
+    //여기에 웹서버 열리면 알려줄거 더있는가?
+});
+
+
+port.on('open', function () {
+    port.write('1', function (err) {
+        if (err) {
+            return console.log('Error on write: ', err.message);
+        }
+        //db에서 값 한번 받아오자 최근꺼
+        console.log('port connected!');
+    });
+});
+
+port.on('error', function (err) {
+    console.log('Error: ', err.message);
+});
+
+port.on('data', function (buf) {
+    var data = new Buffer(buf, "hex");
+    var tmp = {
+        'T': 0,
+        'H': 0,
+        'C': 0,
+        'I': 0
+    };
+    var now;
+    var fl = 0;
+    var pl = 1;
+    for (var i = 3; i < data.length; i++) {
+        if (String.fromCharCode(data[0]) == '') {
+            if (String.fromCharCode(data[1]) == 'T') {
+                if (String.fromCharCode(data[2]) == device.toString()) {
+                    switch (String.fromCharCode(data[i])) {
+                        case 'T':
+                            if (fl || !pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'H':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'C':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'I':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case '':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            controller.InsertValue(tmp['T'],tmp['H'],tmp['C'],tmp['I']);//
+                            break;
+                        case '.':
+                            fl = 1;
+                            break;
+                        case '+':
+                            pl = 1;
+                            break;
+                        case '-':
+                            pl = -1;
+                            break;
+                        default://숫자
+                            var convertdata;
+                            convertdata = parseInt(data[i]) - 48;
+                            console.log(convertdata);
+                            tmp[now] *= 10;
+                            tmp[now] += convertdata;
+                            fl *= 10;
+                    }
+                }
+            }
+        }
+    }
+
+    //tim=date.toFormat('YYYYMMDDHH24MISS');
+    console.log(sensor);
+    //Insertdb
+    controller.InsertDb;
+    console.log('Read and Send Data : ' + data);
+
+    //여기서 바로 res.json return 하게 가능?
+    //    String.fromCharCode(askii);
+});//데이터를 받으면 실행되는 콜백함수
+
+var mysql = require('mysql');
+var connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: 'skagus0728',
+    database: 'smartfarm'
+});
+let sensor = {//대괄호이다
+    't': 0,
+    'h': 0,
+    'c': 0,
+    'i': 0
+};
+connection.connect();
+
+//connection.end();
+exports.index = (req, res) => {
+    //    res.send(sensor);
+    return res.json(sensor);
+};
+exports.SendValue = (req, res) => {
+    const l = req.body.l || '';
+    const f = req.body.f || '';
+    const r = req.bdoy.r || '';
+    const b = req.body.b || '';
+    const w = req.body.w || '';
+    //고쳐야될듯?
+    var str = "\x02L0" + l + "W" + f + "R" + r + "G" + g + "B" + w + '\x0d\x0a\x03';
+    var buf = new Buffer(str);
+    port.write(buf);
+};
+exports.RequestValue = (req, res) => {//분 %10이 0일때 한번씩 호출하자
+    var device=req.params.device;
+    var str = "\x02T" + device.toString() + "TEMP?\x03\x0A\x0D";
+    var buf = new Buffer(str);
+    //return res.Buffer(buf);
+    port.write(buf);
+    res.redirect('/');
+};
+
+exports.Getdb = (req, res) => {
+    const tmp = parseInt(req.params.tim, 10);
+    if(tmp==0){
+        connection.query('select * from sensor', function(err, rows, fields) {
+            if (err) throw err;
+            return rows;
+        });
+    }
+    connection.query(`select * from sensor where tim='${tmp}'`, function(err, rows, fields) {
+        if (err) throw err;
+        return rows;
+    });
+};
+
+exports.InsertValue=(req,res,t,h,c,i)=>{
+    sensor['t'] = t;
+    sensor['h'] = h;
+    sensor['c'] = c;
+    sensor['i'] = i;
+}
+
+exports.InsertDb=(req,res)=>{
+
+    connection.query(`insert into sensor values(0,${sensor['t']},${sensor['h']},${sensor['c']},${sensor['i']});`, function (err, rows, fields) {
+        if (err){
+            throw err;
+        }    
+        console.log('The solution is: ', rows[0]);
+    });
+}
+
+setInterval(() => {
+    // app is running
+}, 1000);
+
+const gracfulCleanJob = () => new Promise((resolve, reject) => {
+    setTimeout(() => {
+        // cleaning job done
+        resolve();
+    }, 3000);
+});
+
+process.on('SIGINT', function () {
+    console.log("Caught interrupt signal");
+    connection.end();
+    process.exit();
+    gracfulCleanJob().then(() => {
+    })
+});
+
+
+
+
+
+
+
+port.on('open', function () {
+    port.write('1', function (err) {
+        if (err) {
+            return console.log('Error on write: ', err.message);
+        }
+        //db에서 값 한번 받아오자 최근꺼
+        console.log('port connected!');
+    });
+});
+
+port.on('error', function (err) {
+    console.log('Error: ', err.message);
+});
+
+port.on('data', function (buf) {
+    var data = new Buffer(buf, "hex");
+    var tmp = {
+        'T': 0,
+        'H': 0,
+        'C': 0,
+        'I': 0
+    };
+    var now;
+    var fl = 0;
+    var pl = 1;
+    for (var i = 3; i < data.length; i++) {
+        if (String.fromCharCode(data[0]) == '') {
+            if (String.fromCharCode(data[1]) == 'T') {
+                if (String.fromCharCode(data[2]) == device.toString()) {
+                    switch (String.fromCharCode(data[i])) {
+                        case 'T':
+                            if (fl || !pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'H':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'C':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case 'I':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            now = String.fromCharCode(data[i]);
+                            break;
+                        case '':
+                            if (fl || pl < 0) {
+                                tmp[now] = tmp[now] / fl * pl;
+                                fl = 0;
+                                pl = 1;
+                            }
+                            controller.InsertValue(tmp['T'],tmp['H'],tmp['C'],tmp['I']);//
+                            break;
+                        case '.':
+                            fl = 1;
+                            break;
+                        case '+':
+                            pl = 1;
+                            break;
+                        case '-':
+                            pl = -1;
+                            break;
+                        default://숫자
+                            var convertdata;
+                            convertdata = parseInt(data[i]) - 48;
+                            console.log(convertdata);
+                            tmp[now] *= 10;
+                            tmp[now] += convertdata;
+                            fl *= 10;
+                    }
+                }
+            }
+        }
+    }
+
+    //tim=date.toFormat('YYYYMMDDHH24MISS');
+    console.log(sensor);
+    //Insertdb
+    controller.InsertDb;
+    console.log('Read and Send Data : ' + data);
+
+    //여기서 바로 res.json return 하게 가능?
+    //    String.fromCharCode(askii);
+});//데이터를 받으면 실행되는 콜백함수
