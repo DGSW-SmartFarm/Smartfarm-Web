@@ -7,7 +7,7 @@ var SerialPort = require('serialport');
 //require('date-utils');
 //var date = new Date();
 
-var port = new SerialPort("COM5", {
+var port = new SerialPort("COM3", {
     baudRate: 115200
 });
 var device=3;
@@ -19,10 +19,11 @@ let sensor = {//대괄호이다
 };
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'skagus0728',
-    database: 'smartfarm'
+    host: '10.80.161.196',
+    user: 'raspi',
+    password: '1234',
+    database: 'smartfarm',
+    port:'3306'
 });
 
 connection.connect();
