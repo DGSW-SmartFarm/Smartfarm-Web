@@ -19,19 +19,11 @@ let sensor = {//대괄호이다
 };
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-<<<<<<< HEAD
-    host: '10.80.161.196',
-    user: 'raspi',
-    password: '1234',
-    database: 'smartfarm',
-    port: '3306'
-=======
     host: '192.168.10.50',
     user: 'raspi',
     password: '1235',
     database: 'smartfarm',
     port:'3306'
->>>>>>> 090510786d15d3974cd80d5b357edb2b6089e655
 });
 
 connection.connect();
