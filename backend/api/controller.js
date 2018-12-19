@@ -19,10 +19,11 @@ let sensor = {//대괄호이다
 };
 var mysql = require('mysql');
 var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'skagus0728',
-    database: 'smartfarm'
+    host: '10.80.161.196',
+    user: 'raspi',
+    password: '1234',
+    database: 'smartfarm',
+    port: '3306'
 });
 
 connection.connect();
@@ -33,11 +34,11 @@ exports.index = (req, res) => {
     return res.json(sensor);
 };
 exports.SendValue = (req, res) => {
-    const l = req.body.l%256 || '';
-    const f = req.body.f%256 || '';
-    const r = req.bdoy.r%256 || '';
-    const b = req.body.b%256 || '';
-    const w = req.body.w%256 || '';
+    const l = parseInt(req.params.l, 10)%256;
+    const f = parseInt(req.params.f, 10)%256;
+    const r = parseInt(req.params.r, 10)%256;
+    const b = parseInt(req.params.b, 10)%256;
+    const w = parseInt(req.params.w, 10)%256;
     
     var str = "\x02L0" + l + "W" + f + "R" + r + "G" + g + "B" + w + '\x0d\x0a\x03';
     var buf = new Buffer(str);
@@ -96,13 +97,9 @@ port.on('data', (buf)=> {
     var fl = 0;
     var pl = 1;
     for (var i = 3; i < data.length; i++) {
-        console.log("1")
         if (String.fromCharCode(data[0]) == '') {
-            console.log("2");
             if (String.fromCharCode(data[1]) == 'T') {
-                console.log("3");
                 if (String.fromCharCode(data[2]) == device) {
-                    console.log("4");
                     switch (String.fromCharCode(data[i])) {
                         case 'T':
                             if (fl || !pl < 0) {
