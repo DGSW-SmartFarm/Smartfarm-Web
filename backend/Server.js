@@ -9,7 +9,7 @@ coretex의 센서로부터 값을 받아온다. 그거를 수치로 받아 띄�
 const express=require('express');
 const app = express();
 const hostname='127.0.0.1';
-const portnum='728';
+const portnum='3000';
 const router=express.Router();
 const controller = require('./api/controller');
 app.use(express.static('public'));
@@ -18,6 +18,10 @@ app.get('/get',controller.index);
 app.get('/giveme/:device',controller.RequestValue);
 app.get('/send/:l/:f/:r/:b/:w',controller.SendValue);
 app.get('/getdb/:tim',controller.Getdb);
+app.get('/api/get',controller.index);
+app.get('/api/giveme/:device',controller.RequestValue);
+app.post('/api/send',controller.SendValue);
+app.get('/api/getdb/:tim',controller.Getdb);
 //웹서버 페이지
 
 //웹서버가 열렸을 떄 일어날 일들
@@ -25,5 +29,7 @@ app.listen(portnum,()=>{
     console.log('Server running on http://'+hostname+':'+portnum+'/');
     //여기에 웹서버 열리면 알려줄거 더있는가?
 });
+
+
 
 
