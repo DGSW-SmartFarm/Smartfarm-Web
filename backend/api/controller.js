@@ -39,8 +39,9 @@ exports.SendValue = (req, res) => {
     const r = parseInt(req.params.r, 10)%256;
     const b = parseInt(req.params.b, 10)%256;
     const w = parseInt(req.params.w, 10)%256;
+    console.log(l+","+f+","+r+","+b+","+w);
     
-    var str = "\x02L0" + l + "W" + f + "R" + r + "G" + g + "B" + w + '\x0d\x0a\x03';
+    var str = "\x02L0" + l.toString() + "W" + f.toString() + "R" + r.toString() + "G" + b.toString() + "B" + w.toString() + "\x0d\x0a\x03";
     var buf = new Buffer(str);
     port.write(buf);
 };
@@ -143,11 +144,6 @@ port.on('data', (buf)=> {
                             sensor['h'] = tmp['H'];
                             sensor['c'] = tmp['C'];
                             sensor['i'] = tmp['I'];
-                            console.log("put");
-                            console.log(sensor['t']);
-                            console.log(sensor['h']);
-                            console.log(sensor['c']);
-                            console.log(sensor['i']);
                             break;
                         case '.':
                             fl = 1;
@@ -161,7 +157,6 @@ port.on('data', (buf)=> {
                         default://숫자
                             var convertdata;
                             convertdata = parseInt(data[i]) - 48;
-                            console.log(convertdata);
                             tmp[now] *= 10;
                             tmp[now] += convertdata;
                             fl *= 10;
@@ -177,9 +172,7 @@ port.on('data', (buf)=> {
         if (err){
             throw err;
         }    
-        console.log('The solution is: ', rows[0]);
     });
-    console.log('Read and Send Data : ' + data);
     //return res.json(sensor);
     //여기서 바로 res.json return 하게 가능?
     //    String.fromCharCode(askii);

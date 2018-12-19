@@ -16,7 +16,7 @@ app.use(express.static('public'));
 
 app.get('/api/get',controller.index);
 app.get('/api/giveme/:device',controller.RequestValue);
-app.post('/api/send/:l/:f/:r/:b/:w',controller.SendValue);
+app.get('/api/send/:l/:f/:r/:b/:w',controller.SendValue);
 app.get('/api/getdb/:tim',controller.Getdb);
 //웹서버 페이지
 
